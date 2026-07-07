@@ -1,0 +1,148 @@
+load config
+load generated reference
+connect QLabs
+spawn QCar2
+draw reference
+draw waypoints
+
+read initial state
+
+if start pose not reached:
+    phase = GO_TO_START
+else:
+    phase = TRACK_REFERENCE
+
+while running:
+    read state
+
+    if phase == GO_TO_START:
+        build constant target horizon to start pose
+        solve NLMPC
+        send command
+
+        if start pose reached:
+            stop vehicle
+            reset solver warm start
+            reset tracking timer
+            phase = TRACK_REFERENCE
+
+    elif phase == TRACK_REFERENCE:
+        reference_index = elapsed_tracking_time / Ts
+        build reference horizon from CSV
+        solve NLMPC
+        send command
+
+        if goal pose reached:
+            stop vehicle
+            phase = FINISHED
+
+Validation Part:
+1) Straight Line:
+   waypoints: [[0.0, 0.0], [-3.0, 0.0], [-5.0, 0.0]]
+   segment_times: [5.0, 5.0]
+On ref: Checked
+Out ref: Checked
+
+2) Curved Line
+  waypoints: [
+    [0.0, 0.0],
+    [-1.0, 0.2],
+    [-2.0, 0.7],
+    [-3.0, 1.4],
+    [-4.0, 0.9],
+    [-6.0, 0.25]
+  ]
+  segment_times: [4.0, 4.0, 4.0, 4.0, 4.0]
+On ref: Checked
+Out ref: Checked
+
+3) Circle 1 - d = 3m
+psi_start: 1.57
+psi_end: 1.57
+waypoints: [
+    [0.0, 0.0],
+    [-0.439, 1.061],
+    [-1.5, 1.5],
+    [-2.561, 1.061],
+    [-3.0, 0.0],
+    [-2.561, -1.061],
+    [-1.5, -1.5],
+    [-0.439, -1.061],
+    [0.0, 0.0]
+  ]
+ segment_times: [4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0]
+
+On ref: 
+Out ref: 
+
+4) Circle 2 - d = 1.5m
+psi_start: 1.57
+psi_end: 1.4    
+  waypoints: [
+    [0.0, 0.0],
+    [-0.375, 0.650],
+    [-1.125, 0.650],
+    [-1.5, 0.0],
+    [-1.125, -0.650],
+    [-0.375, -0.650],
+    [0.0, 0.0]
+  ]
+  segment_times: [6.0, 6.0, 6.0, 6.0, 6.0, 6.0]
+
+On ref:  
+Out ref:  
+
+5) Barcelona Grand Prix
+psi_start: 3.14
+  psi_end: 3.14
+  start_speed: 0.0
+  end_speed: 0.0
+  waypoints: [
+    [0.0, 0.0],
+    [-2.5, 0.0],
+    [-4.0, 0.3],
+    [-4.8, 1.0],
+    [-4.8, 2.0],
+    [-4.0, 2.8],
+    [-2.6, 3.2],
+    [-1.0, 3.4],
+    [0.0, 3.2],
+    [0.6, 2.3],
+    [-0.2, 1.5],
+
+    [-2.2, 2.1],
+    [-3.4, 1.4],
+    [-2.2, 0.7],
+    [-0.5, 1.0],
+
+    [0.6, 0.6],
+    [1.6, 1.6],
+    [2.6, 2.6],
+    [3.2, 3.8],
+    [4.0, 2.8],
+    [5.5, 2.0],
+
+    [4.0, 1.2],
+    [5.0, 0.6],
+    [6.5, 1.0],
+
+    [7.7, 2.5],
+    [8.7, 2.0],
+    [8.7, 1.0],
+
+    [7.7, 0.2],
+    [5.5, 0.0],
+    [3.0, 0.0],
+    [0.0, 0.0]
+  ]
+
+  segment_times: [
+    3.0,
+    3.0, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5,
+    1.5, 1.5, 2.0, 2.0, 2.0, 2.0, 1.5,
+    1.5, 1.5, 1.5, 1.5, 2.0, 2.0, 2.0,
+    2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+    6.0
+  ]
+
+On ref: Checked
