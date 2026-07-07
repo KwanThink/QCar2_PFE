@@ -1,0 +1,106 @@
+project:
+  name: OAMPC_Mk2_1
+
+paths:
+  quanser_python_dir: "../python"
+  generated_trajectory_dir: "generated_qcar2_flatness_bezier_Mk1"
+  results_dir: "results"
+
+trajectory:
+  sample_time: 0.02 # for each reference sample
+  psi_start: 0.0
+  psi_end: 0.0
+  start_speed: 0.0
+  end_speed: 0.0
+  waypoints: [
+    [0.0, 0.0],
+    [2.0, 0.0],
+    [4.0, 0.7],
+    [7.5, 1.4],
+    [11.0, 0.7],
+    [13.0, 0.0],
+    [15.0, 0.0]
+  ]
+
+  segment_times: [3.0, 3.0, 4.0, 4.0, 3.0, 3.0]
+
+
+oampc:
+  N: 15
+  Ts: 0.05 # s
+  wheelbase: 0.25725 # m
+  epsilon: 1.0e-3
+
+  Q: [100.0, 100.0]
+  R: [0.2, 0.2]
+
+  constraints:
+    vx_min: 0.0 # m/s
+    vx_max: 1.0
+    delta_min: -0.5236
+    delta_max: 0.5236
+    ax_min: -0.3
+    ax_max: 0.3
+
+  solver:
+    backend: gurobi
+    output_flag: false
+    stop_on_failure: true
+    max_consecutive_failures: 5
+    save_template: true
+
+obstacle_avoidance:
+  obstacles:
+    - loc: [4.0, 0.7, 0.0]
+      rot: [0.0, 0.0, 1.048]
+      scale: [1.0, 1.0, 1.0]
+      color: [0.0, 1.0, 0.0]
+      type: cube
+
+    - loc: [11.0, 0.7, 0.0]
+      rot: [0.0, 0.0, 0.786]
+      scale: [1.0, 1.0, 1.0]
+      color: [0.0, 1.0, 0.0]
+      type: cube
+
+  M: 100.0
+  gamma: 0.35
+  slack_weight: 100000000.0
+
+  activation:
+    activation_margin: 0.7
+    pass_margin: 0.4
+    rear_margin: 0.4
+    max_active_obstacles: 1
+
+tracking:
+  goal_position_tolerance: 0.05
+
+qlabs:
+  host: localhost
+
+  qcar:
+    actor_id: 5
+    spawn:
+      x: 0.0
+      y: 0.0
+      yaw: 0.0
+      z: 0.1
+      scale: [0.1, 0.1, 0.1]
+
+    steering_sign: -1.0
+    speed_scale: 1.0
+
+visualization:
+  reference:
+    stride: 10
+    z: 0.015
+    width: 0.025
+    color: [1.0, 0.0, 0.0]
+
+  waypoints:
+    radius: 0.05
+    stride: 24
+    z: 0.025
+    width: 0.015
+    color: [0.0, 0.0, 0.3]

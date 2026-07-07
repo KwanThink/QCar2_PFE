@@ -1,0 +1,33 @@
+{
+  "sample_time": 0.02,
+  "wheelbase": 0.25725,
+  "sample_count": 1001,
+  "total_time": 20.0,
+  "psi_start": 0.0,
+  "psi_end": 0.0,
+  "start_speed": 0.0,
+  "end_speed": 0.0,
+  "waypoints": [
+    [
+      0.0,
+      0.0
+    ],
+    [
+      10.0,
+      0.0
+    ],
+    [
+      15.0,
+      0.0
+    ]
+  ],
+  "segment_times": [
+    10.0,
+    10.0
+  ],
+  "segment_signs": [
+    1.0,
+    1.0
+  ],
+  "heading_unwrapped": true
+}

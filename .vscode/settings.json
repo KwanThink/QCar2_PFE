@@ -1,0 +1,14 @@
+{
+    "python-envs.pythonProjects": [
+        {
+            "path": ".",
+            "envManager": "ms-python.python:venv",
+            "packageManager": "ms-python.python:pip"
+        }
+    ],
+    "python.defaultInterpreterPath": "E:/VSC_IDE/Python3119/python.exe",
+    "python.analysis.extraPaths": [
+        "E:/VSC_IDE/Qcar_PFE/Qcar_Libraries/src/libraries/python"
+    ],
+    "cmake.sourceDirectory": "E:/VSC_IDE/Qcar_PFE/Qcar_Libraries/src/examples/sdcs/qcar/hardware/ros1_python/src/vision_opencv/image_geometry"
+}

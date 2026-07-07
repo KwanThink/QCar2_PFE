@@ -1,0 +1,72 @@
+{
+  "solver_type": "Gurobi persistent QP template",
+  "obstacle_constraints": false,
+  "big_m_constraints": false,
+  "binary_variables": false,
+  "flat_state": [
+    "X",
+    "X_dot",
+    "Y",
+    "Y_dot"
+  ],
+  "virtual_input": [
+    "v1",
+    "v2"
+  ],
+  "horizon_steps": 10,
+  "sample_time": 0.07,
+  "wheelbase": 0.25725,
+  "epsilon": 0.001,
+  "Q": [
+    100.0,
+    100.0
+  ],
+  "R": [
+    0.2,
+    0.2
+  ],
+  "Ad": [
+    [
+      1.0,
+      0.07,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      1.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      1.0,
+      0.07
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "Bd": [
+    [
+      0.0024500000000000004,
+      0.0
+    ],
+    [
+      0.07,
+      0.0
+    ],
+    [
+      0.0,
+      0.0024500000000000004
+    ],
+    [
+      0.0,
+      0.07
+    ]
+  ]
+}
