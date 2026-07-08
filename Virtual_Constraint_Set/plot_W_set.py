@@ -34,8 +34,45 @@ ax_max = 0.3
 Lwb = 0.25725
 
 # Fixed vx and psi's values are used by main() to draw multiple W sets in one figure.
-vx_array  = np.array([0.20, 0.28, 0.36, 0.45, 0.58, 0.72, 0.85, 0.92, 0.84, 0.70, 0.52, 0.35])
-psi_array = np.array([0.00, 0.06, 0.12, 0.20, 0.29, 0.39, 0.50, 0.60, 0.69, 0.77, 0.84, 0.90])
+# vx_array  = np.array([0.20, 0.28, 0.36, 0.45, 0.58, 0.72, 0.85, 0.92, 0.84, 0.70, 0.52, 0.35])
+# psi_array = np.array([0.00,-0.06,-0.12,-0.20,-0.29,-0.39,-0.50,-0.60,-0.69,-0.77,-0.84,-0.90])
+
+# vx_array = np.array([
+#     0.20, 0.23, 0.26, 0.29, 0.32,
+#     0.35, 0.38, 0.41, 0.44, 0.47,
+#     0.50, 0.53, 0.56, 0.59, 0.62,
+#     0.65, 0.68, 0.71, 0.74, 0.77,
+#     0.80, 0.83, 0.86, 0.89, 0.92,
+#     0.92, 0.89, 0.86, 0.83, 0.80,
+#     0.77, 0.74, 0.71, 0.68, 0.65,
+#     0.62, 0.59, 0.56, 0.53, 0.50,
+#     0.47, 0.44, 0.41, 0.38, 0.35,
+#     0.32, 0.29, 0.26, 0.23, 0.20
+# ])
+
+# psi_array = np.array([
+#     0.00, 0.13, 0.25, 0.38, 0.50,
+#     0.63, 0.75, 0.88, 1.01, 1.13,
+#     1.26, 1.38, 1.51, 1.63, 1.76,
+#     1.88, 2.01, 2.14, 2.26, 2.39,
+#     2.51, 2.64, 2.76, 2.89, 3.02,
+#     3.14, 3.27, 3.39, 3.52, 3.64,
+#     3.77, 3.90, 4.02, 4.15, 4.27,
+#     4.40, 4.52, 4.65, 4.78, 4.90,
+#     5.03, 5.15, 5.28, 5.40, 5.53,
+#     5.65, 5.78, 5.91, 6.03, 6.16
+# ])
+
+N = 50
+
+psi_start = 0.0
+psi_end = 2.0 * np.pi
+psi_step = (psi_end - psi_start) / N
+
+psi_array = np.arange(psi_start, psi_end, psi_step)
+
+vx_value = 0.20
+vx_array = np.full(N, vx_value)
 
 # Output folder
 OUTPUT_DIR = Path(__file__).resolve().parent / "W_set"
@@ -76,8 +113,8 @@ def get_W_vertices(vx: float, psi: float) -> np.ndarray:
     W_vertices = []
 
     for utilde in utilde_vertices:
-        nu = np.dot(M_inv, utilde)
-        W_vertices.append(nu)
+        v = np.dot(M_inv, utilde)
+        W_vertices.append(v)
 
 
     return np.array(W_vertices, dtype=float)
@@ -211,7 +248,7 @@ def plot_W(vx_values: np.ndarray, psi_values: np.ndarray, save_path: Path) -> No
         vertices = get_W_vertices(float(vx), float(psi))
         all_vertices.append(vertices)
 
-        patch = Polygon(vertices, closed=True, edgecolor="red", facecolor=(0.5, 0.5, 0.5, 0.2), linewidth=0.5, zorder=1)
+        patch = Polygon(vertices, closed=True, edgecolor="red", facecolor=(0.5, 0.5, 0.5, 0.2), linewidth=0.25, zorder=1)
         ax.add_patch(patch)
 
     # Compute and draw only the region shared by all W rectangles.
