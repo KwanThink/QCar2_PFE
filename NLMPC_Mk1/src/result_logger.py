@@ -181,7 +181,7 @@ class ResultLogger:
         with (self.run_folder / "metrics.json").open("w", encoding="utf-8") as file:
             json.dump(metrics, file, indent=2)
 
-    # Save all required PNG result plots.
+    # Save all required SVG result plots.
     def _save_plots(self) -> None:
         if not self.rows:
             return
@@ -194,7 +194,7 @@ class ResultLogger:
             return
 
         data = self._rows_to_arrays()
-        self._plot_xy(plt, data, "trajectory_tracking.png")
+        self._plot_xy(plt, data, "trajectory_tracking.svg")
         self._plot_reference_series(
             plt,
             data,
@@ -204,7 +204,7 @@ class ResultLogger:
                 ("psi", "psi_ref", r"$\Psi$", r"$\Psi_{ref}$", r"$\Psi$ (rad)"),
                 ("vx", "vx_ref", r"$v_x$", r"$v_{x,ref}$", r"$v_x$ (m/s)"),
             ],
-            "states.png",
+            "states.svg",
             "QCar2 States",
         )
         self._plot_series(
@@ -216,7 +216,7 @@ class ResultLogger:
                 ("Psi_e", r"$\Psi_e$ (rad)"),
                 ("vx_e", r"$v_{x,e}$ (m/s)"),
             ],
-            "state_error.png",
+            "state_error.svg",
             "QCar2 States Error",
         )
         self._plot_series(
@@ -227,7 +227,7 @@ class ResultLogger:
                 ("delta_cmd", r"$\delta_{cmd}$ (rad)"),
                 ("ax_cmd", r"$a_{x,cmd}$ $\left(\mathrm{m/s^2}\right)$"),
             ],
-            "controls.png",
+            "controls.svg",
             "QCar2 Controls",
         )
         self._plot_reference_series(
@@ -237,7 +237,7 @@ class ResultLogger:
                 ("delta_cmd", "delta_ref", r"$\delta_{cmd}$", r"$\delta_{ref}$", r"$\delta$ (rad)"),
                 ("ax_cmd", "ax_ref", r"$a_{x,cmd}$", r"$a_{x,ref}$", r"$a_x$ $\left(\mathrm{m/s^2}\right)$"),
             ],
-            "input.png",
+            "input.svg",
             "QCar2 Inputs",
         )
         self._plot_series(
@@ -247,10 +247,10 @@ class ResultLogger:
                 ("delta_e", r"$\delta_e$ (rad)"),
                 ("ax_e", r"$a_{x,e}$ $\left(\mathrm{m/s^2}\right)$"),
             ],
-            "input_error.png",
+            "input_error.svg",
             "QCar2 Input Error",
         )
-        self._plot_solve_time(plt, data, "solve_time.png")
+        self._plot_solve_time(plt, data, "solve_time.svg")
 
     # Convert in-memory rows into numeric arrays for plotting.
     def _rows_to_arrays(self) -> dict[str, np.ndarray]:
@@ -275,7 +275,7 @@ class ResultLogger:
         plt.grid(True)
         plt.legend()
         plt.tight_layout()
-        plt.savefig(self.run_folder / filename, dpi=180)
+        plt.savefig(self.run_folder / filename, format="svg")
         plt.close()
 
     # Return lower and upper plot limits for constrained variables.
@@ -312,7 +312,7 @@ class ResultLogger:
             axis.legend()
         fig.suptitle(title)
         fig.tight_layout()
-        fig.savefig(self.run_folder / filename, dpi=180)
+        fig.savefig(self.run_folder / filename, format="svg")
         plt.close(fig)
 
     # Save one vertical multi-subplot time-series figure with actual and reference signals.
@@ -340,7 +340,7 @@ class ResultLogger:
             axis.legend()
         fig.suptitle(title)
         fig.tight_layout()
-        fig.savefig(self.run_folder / filename, dpi=180)
+        fig.savefig(self.run_folder / filename, format="svg")
         plt.close(fig)
 
     # Save the solver computation time plot.
@@ -357,5 +357,5 @@ class ResultLogger:
         axis.grid(True)
         axis.legend()
         fig.tight_layout()
-        fig.savefig(self.run_folder / filename, dpi=180)
+        fig.savefig(self.run_folder / filename, format="svg")
         plt.close(fig)
