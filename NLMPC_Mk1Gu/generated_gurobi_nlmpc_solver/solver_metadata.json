@@ -1,0 +1,33 @@
+{
+  "solver_type": "Gurobi local nonlinear barrier",
+  "state": [
+    "X",
+    "Y",
+    "psi",
+    "vx"
+  ],
+  "input": [
+    "delta",
+    "ax"
+  ],
+  "integration": "RK4",
+  "horizon_steps": 10,
+  "sample_time": 0.07,
+  "wheelbase": 0.25725,
+  "Q": [
+    80.0,
+    80.0,
+    6.0,
+    2.0
+  ],
+  "R": [
+    1.0,
+    1.0
+  ],
+  "P": [
+    200.0,
+    200.0,
+    20.0,
+    12.0
+  ]
+}

@@ -62,7 +62,7 @@ trajectory:
 
 oampc:
   N: 10
-  Ts: 0.07 # s
+  Ts: 0.02 # s
   wheelbase: 0.25725 # m
   epsilon: 1.0e-3
 

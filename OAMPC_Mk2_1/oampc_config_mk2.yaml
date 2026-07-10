@@ -12,21 +12,19 @@ trajectory:
   psi_end: 0.0
   start_speed: 0.0
   end_speed: 0.0
-  waypoints: [
-    [0.0, 0.0],
-    [2.0, 0.0],
-    [4.0, 0.7],
-    [7.5, 1.4],
-    [11.0, 0.7],
-    [13.0, 0.0],
-    [15.0, 0.0]
-  ]
-
-  segment_times: [3.0, 3.0, 4.0, 4.0, 3.0, 3.0]
+  waypoints:
+    - [0.0, 0.0]
+    - [5.0, 0.0]
+    - [10.0, 0.0]
+    - [15.0, 0.0]
+    - [20.0, 0.0]
+    - [25.0, 0.0]
+    - [30.0, 0.0]
+  segment_times: [5.0, 5.0, 5.0, 5.0, 5.0, 5.0]
 
 
 oampc:
-  N: 15
+  N: 12
   Ts: 0.05 # s
   wheelbase: 0.25725 # m
   epsilon: 1.0e-3
@@ -51,26 +49,56 @@ oampc:
 
 obstacle_avoidance:
   obstacles:
-    - loc: [4.0, 0.7, 0.0]
-      rot: [0.0, 0.0, 1.048]
-      scale: [1.0, 1.0, 1.0]
+    - loc: [4.0, 0.0, 0.0]
+      rot: [0.0, 0.0, 0.785]
+      scale: [0.8, 0.8, 1.0]
       color: [0.0, 1.0, 0.0]
       type: cube
 
-    - loc: [11.0, 0.7, 0.0]
-      rot: [0.0, 0.0, 0.786]
-      scale: [1.0, 1.0, 1.0]
+    - loc: [8.0, 0.0, 0.0]
+      rot: [0.0, 0.0, -0.785]
+      scale: [0.8, 0.8, 1.0]
+      color: [0.0, 1.0, 0.0]
+      type: cube
+
+    - loc: [12.0, 0.0, 0.0]
+      rot: [0.0, 0.0, 0.785]
+      scale: [0.8, 0.8, 1.0]
+      color: [0.0, 1.0, 0.0]
+      type: cube
+
+    - loc: [16.0, 0.0, 0.0]
+      rot: [0.0, 0.0, -0.785]
+      scale: [0.8, 0.8, 1.0]
+      color: [0.0, 1.0, 0.0]
+      type: cube
+
+    - loc: [20.0, 0.0, 0.0]
+      rot: [0.0, 0.0, 0.785]
+      scale: [0.8, 0.8, 1.0]
+      color: [0.0, 1.0, 0.0]
+      type: cube
+
+    - loc: [24.0, 0.0, 0.0]
+      rot: [0.0, 0.0, -0.785]
+      scale: [0.8, 0.8, 1.0]
+      color: [0.0, 1.0, 0.0]
+      type: cube
+
+    - loc: [28.0, 0.0, 0.0]
+      rot: [0.0, 0.0, 0.785]
+      scale: [0.8, 0.8, 1.0]
       color: [0.0, 1.0, 0.0]
       type: cube
 
   M: 100.0
-  gamma: 0.35
+  gamma: 0.25
   slack_weight: 100000000.0
 
   activation:
-    activation_margin: 0.7
-    pass_margin: 0.4
-    rear_margin: 0.4
+    activation_margin: 2.0 #0.7
+    pass_margin: 0.5 #0.4
+    rear_margin: 0.5 #0.4
     max_active_obstacles: 1
 
 tracking:

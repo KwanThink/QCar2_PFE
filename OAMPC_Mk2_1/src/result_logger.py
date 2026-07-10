@@ -465,9 +465,9 @@ class ResultLogger:
 
         fig, axis = plt.subplots(1, 1, figsize=(7.0, 3.2))
         axis.plot(time_array, solve_time, label=r"$t_{solve}$")
-        axis.set_title("Solver Time")
+        axis.set_title("Computational Time")
         axis.set_xlabel("t (s)")
-        axis.set_ylabel("Solve time (s)")
+        axis.set_ylabel("Time (s)")
         axis.grid(True)
         axis.legend()
         fig.tight_layout()

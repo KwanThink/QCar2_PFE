@@ -72,10 +72,10 @@
   ],
   "number_of_flat_states": 4,
   "number_of_virtual_inputs": 2,
-  "number_of_config_obstacles": 2,
+  "number_of_config_obstacles": 7,
   "number_of_template_edges": 4,
-  "number_of_alpha_variables": 120,
-  "number_of_beta_variables": 112,
+  "number_of_alpha_variables": 420,
+  "number_of_beta_variables": 392,
   "Big-M M": 100.0,
   "gamma": 0.25,
   "slack_weight": 100000000.0

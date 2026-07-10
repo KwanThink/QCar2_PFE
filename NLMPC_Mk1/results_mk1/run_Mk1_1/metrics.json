@@ -1,12 +1,12 @@
 {
-  "number_of_samples": 857,
-  "mean_position_error": 0.14530099657610834,
-  "max_position_error": 1.2154062412816242,
-  "mean_yaw_error_abs": 0.03949658084974048,
-  "max_yaw_error_abs": 0.26481738122335097,
-  "mean_speed_error_abs": 0.12335585003583995,
-  "max_speed_error_abs": 0.8847393128541138,
-  "mean_solve_time": 0.01035401213540187,
-  "max_solve_time": 0.03056710000964813,
+  "number_of_samples": 856,
+  "mean_position_error": 0.1462439533450999,
+  "max_position_error": 1.2154218561552401,
+  "mean_yaw_error_abs": 0.040950186535488584,
+  "max_yaw_error_abs": 0.26970282765300624,
+  "mean_speed_error_abs": 0.1254276730862867,
+  "max_speed_error_abs": 0.8840385316286503,
+  "mean_solve_time": 0.010065578504730175,
+  "max_solve_time": 0.05407260000356473,
   "solver_success_rate": 1.0
 }

@@ -14,7 +14,7 @@
     "v1",
     "v2"
   ],
-  "horizon_steps": 15,
+  "horizon_steps": 12,
   "sample_time": 0.05,
   "wheelbase": 0.25725,
   "epsilon": 0.001,
@@ -72,11 +72,11 @@
   ],
   "number_of_flat_states": 4,
   "number_of_virtual_inputs": 2,
-  "number_of_config_obstacles": 2,
+  "number_of_config_obstacles": 7,
   "number_of_template_edges": 4,
-  "number_of_alpha_variables": 120,
-  "number_of_beta_variables": 112,
+  "number_of_alpha_variables": 336,
+  "number_of_beta_variables": 308,
   "Big-M M": 100.0,
-  "gamma": 0.35,
+  "gamma": 0.25,
   "slack_weight": 100000000.0
 }
