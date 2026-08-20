@@ -1,0 +1,14 @@
+obstacle_avoidance:
+  obstacles:
+  # Obs 1
+    - loc: [3.0, 0.0, 0.0]
+      rot: [0.0, 0.0, 0.785]
+      scale: [0.6, 0.6, 0.5]
+      color: [1.0, 0.8, 0.0]
+      type: cube
+  # Obs 2
+    - loc: [6.0, 0.0, 0.0]
+      rot: [0.0, 0.0, 0.785]
+      scale: [0.6, 0.6, 0.5]
+      color: [1.0, 0.8, 0.0]
+      type: cube

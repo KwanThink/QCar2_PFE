@@ -1,0 +1,99 @@
+project:
+  name: NLMPC_Mk1Gu
+
+paths:
+  quanser_python_dir: "../python"
+  generated_trajectory_dir: "generated_qcar2_flatness_bezier_Mk1"
+  generated_solver_dir: "generated_gurobi_nlmpc_solver"
+  results_dir: "results"
+
+trajectory:
+  sample_time: 0.01 #for each reference
+  psi_start: 3.14
+  psi_end: 3.14
+  start_speed: 0.0
+  end_speed: 0.0
+  waypoints: [
+    [0.0, 0.0],
+    [-1.0, 0.0],
+    [-2.0, 0.0],
+    [-3.0, 0.5],
+    [-3.8, 1.5],
+    [-4.5, 0.5],
+
+    [-6.0, -0.5],
+    [-7.0, -1.0],
+    [-8.0, -0.5],
+    [-9.0, -0.0],
+    [-10.0, 0.0]
+  ]
+
+  segment_times: [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
+
+nlmpc:
+  N: 13
+  Ts: 0.07 #s
+  wheelbase: 0.25725 #m
+
+  constraints:
+    vx_min: -2.0 #m/s
+    vx_max: 2.0
+    delta_min: -0.5236 #rad
+    delta_max: 0.5236
+    ax_min: -1.0 #m/s^2
+    ax_max: 1.0
+
+  weights:
+  # states = [X, Y, psi, vx]; input = [delta, ax]
+    Q: [160.0, 160.0, 80.0, 200.0]
+    R: [10.0, 500.0]
+    P: [320.0, 320.0, 160.0, 400.0]
+
+  solver:
+    backend: gurobi
+    output_flag: false
+    optimality_target: 1
+    max_iter: 60
+    tolerance: 1.0e-4
+    save_template: true
+    stop_on_failure: true
+    max_consecutive_failures: 5
+
+tracking:
+  # Correct the QCar2's pose at the start point of reference
+  vx_start: 0.3
+  start_position_tolerance: 0.4
+  start_yaw_tolerance: 0.15
+  start_speed_tolerance: 0.03
+
+  goal_position_tolerance: 0.10
+  goal_yaw_tolerance: 0.175
+
+qlabs:
+  host: localhost
+
+  qcar:
+    actor_id: 5
+    spawn:
+      x: 0.0
+      y: 0.0
+      yaw: 3.14
+      z: 0.1
+      scale: [0.1, 0.1, 0.1]
+
+    steering_sign: -1.0
+    speed_scale: 1.0
+
+visualization:
+  reference:
+    stride: 10
+    z: 0.015
+    width: 0.025
+    color: [1.0, 0.0, 0.0]
+
+  waypoints:
+    radius: 0.05
+    stride: 24
+    z: 0.025
+    width: 0.015
+    color: [0.0, 0.0, 0.3]

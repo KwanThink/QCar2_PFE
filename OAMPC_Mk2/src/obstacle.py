@@ -136,8 +136,8 @@ def build_obstacle(raw_obstacle: dict[str, Any], obstacle_id: int) -> dict[str, 
 
 
 # Build all obstacle geometry records from the Mk2 YAML config.
-def build_obstacle_list(config: dict[str, Any]) -> list[dict[str, Any]]:
-    obstacle_config = config["obstacle_avoidance"]
+def build_obstacle_list(obstacle_file_config: dict[str, Any]) -> list[dict[str, Any]]:
+    obstacle_config = obstacle_file_config["obstacle_avoidance"]
     raw_obstacles = obstacle_config["obstacles"] or []
     return [build_obstacle(raw_obstacle, obstacle_id) for obstacle_id, raw_obstacle in enumerate(raw_obstacles)]
 

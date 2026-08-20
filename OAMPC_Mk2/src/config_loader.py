@@ -70,17 +70,9 @@ def validate_obstacle_entry(obstacle: Any, index: int) -> None:
 # Validate the obstacle avoidance section used by the MIQP solver.
 def validate_obstacle_avoidance(config: dict[str, Any]) -> None:
     obstacle_config = config["obstacle_avoidance"]
-    for key in ("obstacles", "M", "gamma", "slack_weight"):
+    for key in ("M", "gamma", "slack_weight"):
         if key not in obstacle_config:
             raise ValueError(f"obstacle_avoidance.{key} is required.")
-    obstacles = obstacle_config["obstacles"]
-    if obstacles is None:
-        obstacles = []
-        obstacle_config["obstacles"] = obstacles
-    if not isinstance(obstacles, list):
-        raise ValueError("obstacle_avoidance.obstacles must be a list.")
-    for index, obstacle in enumerate(obstacles):
-        validate_obstacle_entry(obstacle, index)
     if float(obstacle_config["M"]) <= 0.0:
         raise ValueError("obstacle_avoidance.M must be positive.")
     if float(obstacle_config["gamma"]) < 0.0:
@@ -142,3 +134,42 @@ def load_config(config_path: str | Path | None = None) -> dict[str, Any]:
         "generated_solver_dir": str(resolve_project_path(root, "generated_oampc_solver")),
     }
     return config
+
+# Validate the independently loaded obstacle configuration file.
+def validate_obstacle_config(obstacle_config: dict[str, Any]) -> None:
+    if not isinstance(obstacle_config, dict):
+        raise ValueError("Obstacle config file must contain a YAML mapping.")
+    if "obstacle_avoidance" not in obstacle_config:
+        raise ValueError("Obstacle config file is missing 'obstacle_avoidance'.")
+
+    obstacle_section = obstacle_config["obstacle_avoidance"]
+    if not isinstance(obstacle_section, dict) or "obstacles" not in obstacle_section:
+        raise ValueError("Obstacle config file is missing 'obstacle_avoidance.obstacles'.")
+
+    obstacles = obstacle_section["obstacles"]
+    if obstacles is None:
+        obstacles = []
+        obstacle_section["obstacles"] = obstacles
+    if not isinstance(obstacles, list):
+        raise ValueError("obstacle_avoidance.obstacles must be a list.")
+    for index, obstacle in enumerate(obstacles):
+        validate_obstacle_entry(obstacle, index)
+
+
+# Load the obstacle YAML as an independent configuration dictionary.
+def load_obstacle_config(obstacle_config_path: str | Path | None = None) -> dict[str, Any]:
+    root = project_root()
+    path = (
+        Path(obstacle_config_path).expanduser().resolve()
+        if obstacle_config_path is not None
+        else root / "obstacle_config_mk2.yaml"
+    )
+    if not path.exists():
+        raise FileNotFoundError(f"Obstacle config file not found: {path}")
+
+    with path.open("r", encoding="utf-8") as file:
+        obstacle_config = yaml.safe_load(file) or {}
+
+    validate_obstacle_config(obstacle_config)
+    obstacle_config["_config_path"] = str(path)
+    return obstacle_config

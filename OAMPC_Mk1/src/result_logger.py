@@ -406,12 +406,12 @@ class ResultLogger:
 
         fig, axes = plt.subplots(2, 1, figsize=(7.0, 5.6), squeeze=False)
         axes[0, 0].plot(time_array, data["v1"], label=r"$v_1$")
-        axes[0, 0].set_ylabel(r"$v_1$ [$m/s^2$]")
+        axes[0, 0].set_ylabel(r"$v_1$")
         axes[0, 0].grid(True)
         axes[0, 0].legend()
 
         axes[1, 0].plot(time_array, data["v2"], label=r"$v_2$")
-        axes[1, 0].set_ylabel(r"$v_2$ [$m/s^2$]")
+        axes[1, 0].set_ylabel(r"$v_2$")
         axes[1, 0].set_xlabel("Time [s]")
         axes[1, 0].grid(True)
         axes[1, 0].legend()

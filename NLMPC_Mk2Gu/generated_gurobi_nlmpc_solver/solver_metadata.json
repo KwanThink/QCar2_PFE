@@ -1,0 +1,41 @@
+{
+  "solver_type": "Gurobi global MINLP",
+  "state": [
+    "X",
+    "Y",
+    "psi",
+    "vx"
+  ],
+  "input": [
+    "delta",
+    "ax"
+  ],
+  "integration": "RK4",
+  "obstacle_constraints": "Big-M with alpha binaries",
+  "obstacle_constraints_mode": "all_config_obstacles_always_constrained",
+  "horizon_steps": 13,
+  "sample_time": 0.07,
+  "wheelbase": 0.25725,
+  "Q": [
+    120.0,
+    120.0,
+    60.0,
+    80.0
+  ],
+  "R": [
+    5.0,
+    100.0
+  ],
+  "P": [
+    240.0,
+    240.0,
+    120.0,
+    160.0
+  ],
+  "number_of_config_obstacles": 2,
+  "number_of_template_edges": 4,
+  "number_of_alpha_variables": 104,
+  "M": 100.0,
+  "gamma": 0.25,
+  "slack_weight": 100000000.0
+}

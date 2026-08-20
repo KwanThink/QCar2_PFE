@@ -92,9 +92,13 @@ def basic_shape_configuration(modules: dict[str, Any], obstacle_type: str) -> in
 
 
 # Spawn all configured obstacle BasicShape actors in QLabs.
-def spawn_obstacles_from_config(qlabs: Any, config: dict[str, Any]) -> list[Any]:
+def spawn_obstacles_from_config(
+    qlabs: Any,
+    config: dict[str, Any],
+    obstacle_file_config: dict[str, Any],
+) -> list[Any]:
     modules = import_quanser_modules(config)
-    obstacle_config = config["obstacle_avoidance"]
+    obstacle_config = obstacle_file_config["obstacle_avoidance"]
     raw_obstacles = obstacle_config["obstacles"] or []
     if not raw_obstacles:
         return []

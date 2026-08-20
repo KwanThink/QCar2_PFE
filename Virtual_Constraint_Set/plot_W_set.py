@@ -29,8 +29,8 @@ import numpy as np
 
 delta_min = -0.5236
 delta_max = 0.5236
-ax_min = -0.3
-ax_max = 0.3
+ax_min = -1.0
+ax_max = 1.0
 Lwb = 0.25725
 
 # Fixed vx and psi's values are used by main() to draw multiple W sets in one figure.
@@ -63,7 +63,7 @@ Lwb = 0.25725
 #     5.65, 5.78, 5.91, 6.03, 6.16
 # ])
 
-N = 50
+N = 30
 
 psi_start = 0.0
 psi_end = 2.0 * np.pi
@@ -71,7 +71,7 @@ psi_step = (psi_end - psi_start) / N
 
 psi_array = np.arange(psi_start, psi_end, psi_step)
 
-vx_value = 0.20
+vx_value = 1.0
 vx_array = np.full(N, vx_value)
 
 # Output folder
@@ -224,9 +224,9 @@ def plot_U(save_path: Path) -> None:
     patch = Polygon(vertices, closed=True, edgecolor="navy", facecolor=(0.5, 0.5, 0.5, 0.2), linewidth=0.5)
     ax.add_patch(patch)
 
-    ax.set_xlabel(r"$u_1 = \delta$ [rad]")
-    ax.set_ylabel(r"$u_2 = a_x$ [m/s$^2$]")
-    ax.set_title(r"Original input constraint set $U$")
+    ax.set_xlabel(r"$u_1 $(rad)")
+    ax.set_ylabel(r"$u_2 $(m/s$^2$)")
+    ax.set_title(r"Input constraint set $U$")
     ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.6)
     ax.set_aspect("equal", adjustable="box")
     ax.autoscale_view()
@@ -239,7 +239,7 @@ def plot_W(vx_values: np.ndarray, psi_values: np.ndarray, save_path: Path) -> No
     vx_values = np.asarray(vx_values, dtype=float)
     psi_values = np.asarray(psi_values, dtype=float)
 
-    fig, ax = plt.subplots(figsize=(7.5, 5.0))
+    fig, ax = plt.subplots(figsize=(6.0, 6.0))
 
     all_vertices = []
 

@@ -55,8 +55,9 @@ def finite_or_empty(value: Any) -> float | str:
 # Store tracking data and save CSV, JSON, and plot outputs.
 class ResultLogger:
     # Initialize the logger with code-level defaults for OAMPC Mk2 runs.
-    def __init__(self, config: dict[str, Any]):
+    def __init__(self, config: dict[str, Any], obstacle_file_config: dict[str, Any]):
         self.config = config
+        self.obstacle_file_config = obstacle_file_config
         self.enabled = True
         self.save_plots = True
         self.results_dir = Path(config["_resolved_paths"]["results_dir"])
@@ -72,13 +73,16 @@ class ResultLogger:
         if self.run_folder is None:
             self.run_folder = create_indexed_run_folder(self.results_dir, self.run_prefix)
 
-    # Copy the active config file into the run folder.
+    # Copy the independently loaded config files into the run folder.
     def copy_used_config(self) -> None:
         if self.run_folder is None:
             return
         config_path = Path(self.config["_config_path"])
         if config_path.exists():
             shutil.copy2(config_path, self.run_folder / "config_used.yaml")
+        obstacle_config_path = Path(self.obstacle_file_config["_config_path"])
+        if obstacle_config_path.exists():
+            shutil.copy2(obstacle_config_path, self.run_folder / "obstacle_config_used.yaml")
 
     # Append obstacle edge rows for the current control-loop sample.
     def record_obstacle_hulls(
@@ -114,6 +118,7 @@ class ResultLogger:
         number_of_config_obstacles: int = 0,
         number_of_active_obstacles: int = 0,
         number_of_active_edges: int = 0,
+        number_of_binary_variables: int = 0,
         obstacle_list: list[dict[str, Any]] | None = None,
         active_obstacle_ids: list[int] | None = None,
     ) -> None:
@@ -168,6 +173,7 @@ class ResultLogger:
             "number_of_config_obstacles": int(number_of_config_obstacles),
             "number_of_active_obstacles": int(number_of_active_obstacles),
             "number_of_active_edges": int(number_of_active_edges),
+            "number_of_binary_variables": int(number_of_binary_variables),
         }
         self.rows.append(row)
         self.record_obstacle_hulls(t, ref_index, obstacle_list, active_obstacle_ids)
@@ -198,7 +204,19 @@ class ResultLogger:
         write_dict_csv(self.run_folder / "input_error.csv", self.rows, ["t", "delta_e", "ax_e"])
         write_dict_csv(self.run_folder / "control_error.csv", self.rows, ["t", "delta_e", "ax_e"])
         write_dict_csv(self.run_folder / "tracking_error.csv", self.rows, ["t", "position_error", "yaw_error", "speed_error"])
-        write_dict_csv(self.run_folder / "solve_times.csv", self.rows, ["t", "solve_time", "solver_success", "solver_status"])
+        write_dict_csv(
+            self.run_folder / "solve_times.csv",
+            self.rows,
+            [
+                "t",
+                "solve_time",
+                "solver_success",
+                "solver_status",
+                "number_of_config_obstacles",
+                "number_of_active_edges",
+                "number_of_binary_variables",
+            ],
+        )
         write_dict_csv(self.run_folder / "trajectory_reference.csv", self.rows, ["time", "reference_index", "X_ref", "Y_ref", "psi_ref", "vx_ref", "delta_ref", "ax_ref"])
         write_dict_csv(
             self.run_folder / "tracking_log.csv",
@@ -225,7 +243,19 @@ class ResultLogger:
         write_dict_csv(
             self.run_folder / "virtual_input.csv",
             self.rows,
-            ["time", "reference_index", "v1", "v2", "delta_command", "acceleration_command", "solver_status", "solver_success", "solve_time"],
+            [
+                "time",
+                "reference_index",
+                "v1",
+                "v2",
+                "delta_command",
+                "acceleration_command",
+                "slack_value",
+                "mip_gap",
+                "solver_status",
+                "solver_success",
+                "solve_time",
+            ],
         )
         write_dict_csv(
             self.run_folder / "obstacle_hulls.csv",
@@ -376,7 +406,7 @@ class ResultLogger:
         except ModuleNotFoundError:
             return
         axis = plt.gca()
-        obstacles = build_obstacle_list(self.config)
+        obstacles = build_obstacle_list(self.obstacle_file_config)
         for index, obstacle in enumerate(obstacles):
             patch = Polygon(
                 np.asarray(obstacle["vertices"], dtype=float),
@@ -481,12 +511,12 @@ class ResultLogger:
 
         fig, axes = plt.subplots(2, 1, figsize=(7.0, 5.6), squeeze=False)
         axes[0, 0].plot(time_array, data["v1"], label=r"$v_1$")
-        axes[0, 0].set_ylabel(r"$v_1$ [$m/s^2$]")
+        axes[0, 0].set_ylabel(r"$v_1$")
         axes[0, 0].grid(True)
         axes[0, 0].legend()
 
         axes[1, 0].plot(time_array, data["v2"], label=r"$v_2$")
-        axes[1, 0].set_ylabel(r"$v_2$ [$m/s^2$]")
+        axes[1, 0].set_ylabel(r"$v_2$")
         axes[1, 0].set_xlabel("Time [s]")
         axes[1, 0].grid(True)
         axes[1, 0].legend()

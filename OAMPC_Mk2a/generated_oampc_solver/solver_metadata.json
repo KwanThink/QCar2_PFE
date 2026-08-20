@@ -1,0 +1,81 @@
+{
+  "solver_type": "Gurobi persistent MIQP template",
+  "obstacle_constraints": true,
+  "big_m_constraints": true,
+  "binary_variables": true,
+  "obstacle_constraints_mode": "local_geometric_online_activation",
+  "flat_state": [
+    "X",
+    "X_dot",
+    "Y",
+    "Y_dot"
+  ],
+  "virtual_input": [
+    "v1",
+    "v2"
+  ],
+  "horizon_steps": 30,
+  "sample_time": 0.02,
+  "wheelbase": 0.25725,
+  "epsilon": 0.001,
+  "Q": [
+    100.0,
+    100.0
+  ],
+  "R": [
+    2.0,
+    2.0
+  ],
+  "Ad": [
+    [
+      1.0,
+      0.02,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      1.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      1.0,
+      0.02
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "Bd": [
+    [
+      0.0002,
+      0.0
+    ],
+    [
+      0.02,
+      0.0
+    ],
+    [
+      0.0,
+      0.0002
+    ],
+    [
+      0.0,
+      0.02
+    ]
+  ],
+  "number_of_flat_states": 4,
+  "number_of_virtual_inputs": 2,
+  "number_of_config_obstacles": 53,
+  "number_of_template_edges": 4,
+  "number_of_alpha_variables": 6360,
+  "Big-M M": 100.0,
+  "gamma": 0.25,
+  "slack_weight": 100000000.0
+}

@@ -30,6 +30,7 @@ class SolverResult:
     number_of_config_obstacles: int = 0
     number_of_active_obstacles: int = 0
     number_of_active_edges: int = 0
+    number_of_binary_variables: int = 0
     active_obstacle_ids: list[int] = field(default_factory=list)
 
 
@@ -62,7 +63,7 @@ def unwrap_to_reference(angle: float, reference_angle: float) -> float:
 # Solve a flat-coordinate Cartesian OAMPC MIQP with a persistent Gurobi template.
 class GurobiFlatCoordinateOAMPC:
     # Initialize dimensions, weights, bounds, obstacles, and the reusable Gurobi model.
-    def __init__(self, config: dict[str, Any]):
+    def __init__(self, config: dict[str, Any], obstacle_file_config: dict[str, Any]):
         oampc_config = config["oampc"]
         obstacle_config = config["obstacle_avoidance"]
         constraints = oampc_config["constraints"]
@@ -88,24 +89,121 @@ class GurobiFlatCoordinateOAMPC:
         self.ax_min = float(constraints["ax_min"])
         self.ax_max = float(constraints["ax_max"])
 
-        self.config_obstacles = build_obstacle_list(config)
-        self.template: OAMPCTemplate = build_oampc_template(config)
+        self.config_obstacles = build_obstacle_list(obstacle_file_config)
+        self.template: OAMPCTemplate = build_oampc_template(config, obstacle_file_config)
         self.model = self.template.model
         self.flat_state = self.template.flat_state
         self.virtual_input = self.template.virtual_input
         self.slack = self.template.slack
         self.alpha = self.template.alpha
-        self.beta = self.template.beta
         self.w_constraints = self.template.w_constraints
         self.obstacle_face_constraints = self.template.obstacle_face_constraints
         self.obstacle_sum_constraints = self.template.obstacle_sum_constraints
-        self.beta_sum_constraints = self.template.beta_sum_constraints
         self.number_of_template_edges = int(self.template.number_of_template_edges)
+        # NumBinVars is the exact number of binary variables in the reusable MIQP template.
+        self.number_of_binary_variables = int(self.model.NumBinVars)
 
-    # Reset any optional warm-start information before a new tracking run starts.
+        # Keep the latest usable solution for the shifted warm-start and the
+        # horizon-dependent physical-input constraint mapping.
+        self._previous_flat_state: np.ndarray | None = None
+        self._previous_virtual_input: np.ndarray | None = None
+        self._previous_alpha: np.ndarray | None = None
+        self._previous_slack: float | None = None
+
+    # Clear the cached solution and all explicit Gurobi start values.
     def reset_warm_start(self) -> None:
+        self._previous_flat_state = None
+        self._previous_virtual_input = None
+        self._previous_alpha = None
+        self._previous_slack = None
         for variable in self.model.getVars():
             variable.Start = GRB.UNDEFINED
+
+    # Return True when a complete previous solution is available for shifting.
+    def _warm_start_is_available(self) -> bool:
+        return (
+            self._previous_flat_state is not None
+            and self._previous_virtual_input is not None
+            and self._previous_alpha is not None
+            and self._previous_slack is not None
+        )
+
+    # Save the current usable solution for the next OAMPC iteration.
+    def _store_solution_for_warm_start(self) -> None:
+        self._previous_flat_state = np.array(
+            [
+                [float(self.flat_state[step, state_index].X) for state_index in range(self.nx)]
+                for step in range(self.horizon_steps + 1)
+            ],
+            dtype=float,
+        )
+        self._previous_virtual_input = np.array(
+            [
+                [float(self.virtual_input[step, input_index].X) for input_index in range(self.nv)]
+                for step in range(self.horizon_steps)
+            ],
+            dtype=float,
+        )
+
+        number_of_obstacles = int(self.template.number_of_config_obstacles)
+        self._previous_alpha = np.zeros(
+            (number_of_obstacles, self.number_of_template_edges, self.horizon_steps),
+            dtype=float,
+        )
+        for obstacle_slot in range(number_of_obstacles):
+            for edge_slot in range(self.number_of_template_edges):
+                for step in range(self.horizon_steps):
+                    self._previous_alpha[obstacle_slot, edge_slot, step] = float(
+                        self.alpha[obstacle_slot, edge_slot, step].X
+                    )
+        self._previous_slack = max(0.0, float(self.slack.X))
+
+    # Apply a one-step shifted explicit start from the latest usable solution.
+    def _apply_shifted_warm_start(self, current_flat_state: np.ndarray) -> None:
+        if not self._warm_start_is_available():
+            return
+
+        assert self._previous_flat_state is not None
+        assert self._previous_virtual_input is not None
+        assert self._previous_alpha is not None
+        assert self._previous_slack is not None
+
+        # The initial state is always replaced by the current measured state.
+        for state_index in range(self.nx):
+            self.flat_state[0, state_index].Start = float(current_flat_state[state_index])
+
+        # Shift the previous predicted states by one sample. The new terminal
+        # state is obtained by one additional rollout with the previous last input.
+        for step in range(1, self.horizon_steps):
+            shifted_state = self._previous_flat_state[step + 1]
+            for state_index in range(self.nx):
+                self.flat_state[step, state_index].Start = float(shifted_state[state_index])
+
+        terminal_state = (
+            self.template.ad_matrix @ self._previous_flat_state[-1]
+            + self.template.bd_matrix @ self._previous_virtual_input[-1]
+        )
+        for state_index in range(self.nx):
+            self.flat_state[self.horizon_steps, state_index].Start = float(terminal_state[state_index])
+
+        # Shift the virtual-input sequence and hold the last value at the end.
+        for step in range(self.horizon_steps):
+            source_step = min(step + 1, self.horizon_steps - 1)
+            for input_index in range(self.nv):
+                self.virtual_input[step, input_index].Start = float(
+                    self._previous_virtual_input[source_step, input_index]
+                )
+
+        # Shift every binary obstacle-face decision in the same manner.
+        number_of_obstacles = int(self.template.number_of_config_obstacles)
+        for obstacle_slot in range(number_of_obstacles):
+            for edge_slot in range(self.number_of_template_edges):
+                for step in range(self.horizon_steps):
+                    source_step = min(step + 1, self.horizon_steps - 1)
+                    alpha_start = self._previous_alpha[obstacle_slot, edge_slot, source_step]
+                    self.alpha[obstacle_slot, edge_slot, step].Start = float(round(alpha_start))
+
+        self.slack.Start = float(self._previous_slack)
 
     # Convert a physical QCar2 state into the flat state z = [X, X_dot, Y, Y_dot].
     def _current_flat_state(self, current_state: np.ndarray) -> np.ndarray:
@@ -147,18 +245,66 @@ class GurobiFlatCoordinateOAMPC:
         objective += self.slack_weight * self.slack
         return objective
 
-    # Update the flat-input constraint W from the current yaw and velocity.
-    def _update_virtual_input_constraints(self, current_state: np.ndarray) -> tuple[float, float, float, float, float]:
-        psi = float(current_state[2])
-        vx = float(current_state[3])
-        vx_eps = vx * vx + self.epsilon
+    # Recover yaw and speed from one flat state for the input-set mapping.
+    def _mapping_state_from_flat_state(self, flat_state: np.ndarray, fallback_yaw: float) -> tuple[float, float]:
+        x_velocity = float(flat_state[1])
+        y_velocity = float(flat_state[3])
+        velocity = float(math.hypot(x_velocity, y_velocity))
+        if velocity <= 1.0e-9:
+            return float(fallback_yaw), 0.0
+        return float(math.atan2(y_velocity, x_velocity)), velocity
 
-        m11 = -self.wheelbase / vx_eps * math.sin(psi)
-        m12 = self.wheelbase / vx_eps * math.cos(psi)
-        m21 = math.cos(psi)
-        m22 = math.sin(psi)
+    # Build the yaw and speed sequence used to update M at every horizon step.
+    def _build_mapping_state_sequence(
+        self,
+        current_state: np.ndarray,
+        reference_state: np.ndarray,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        yaw_sequence = np.asarray(reference_state[2, : self.horizon_steps], dtype=float).copy()
+        velocity_sequence = np.maximum(
+            np.asarray(reference_state[3, : self.horizon_steps], dtype=float),
+            0.0,
+        )
+
+        # The first physical-input mapping always uses the measured state.
+        yaw_sequence[0] = float(current_state[2])
+        velocity_sequence[0] = max(0.0, float(current_state[3]))
+
+        # Future mappings use the shifted state trajectory from the previous
+        # usable solution. The reference yaw remains the low-speed fallback.
+        if self._warm_start_is_available():
+            assert self._previous_flat_state is not None
+            for step in range(1, self.horizon_steps):
+                previous_state_index = step + 1
+                yaw, velocity = self._mapping_state_from_flat_state(
+                    self._previous_flat_state[previous_state_index],
+                    fallback_yaw=float(yaw_sequence[step]),
+                )
+                yaw_sequence[step] = yaw
+                velocity_sequence[step] = velocity
+
+        return yaw_sequence, velocity_sequence
+
+    # Update each flat-input constraint W_j from its horizon yaw and velocity.
+    def _update_virtual_input_constraints(
+        self,
+        current_state: np.ndarray,
+        reference_state: np.ndarray,
+    ) -> tuple[float, float]:
+        yaw_sequence, velocity_sequence = self._build_mapping_state_sequence(
+            current_state,
+            reference_state,
+        )
 
         for step in range(self.horizon_steps):
+            psi = float(yaw_sequence[step])
+            vx = float(velocity_sequence[step])
+            vx_eps = vx * vx + self.epsilon
+            m11 = -self.wheelbase / vx_eps * math.sin(psi)
+            m12 = self.wheelbase / vx_eps * math.cos(psi)
+            m21 = math.cos(psi)
+            m22 = math.sin(psi)
+
             v1 = self.virtual_input[step, 0]
             v2 = self.virtual_input[step, 1]
             for constraint_name in ("steering_lower", "steering_upper"):
@@ -170,7 +316,9 @@ class GurobiFlatCoordinateOAMPC:
                 self.model.chgCoeff(constraint, v1, m21)
                 self.model.chgCoeff(constraint, v2, m22)
 
-        return psi, vx, vx_eps, m11, m12
+        current_psi = float(yaw_sequence[0])
+        current_vx_eps = float(velocity_sequence[0] * velocity_sequence[0] + self.epsilon)
+        return current_psi, current_vx_eps
 
     # Convert the first optimal virtual input into physical steering and acceleration.
     def _virtual_to_physical_input(self, v1: float, v2: float, psi: float, vx_eps: float) -> tuple[float, float]:
@@ -267,6 +415,7 @@ class GurobiFlatCoordinateOAMPC:
             number_of_config_obstacles=len(self.config_obstacles),
             number_of_active_obstacles=len(active_obstacles),
             number_of_active_edges=active_edges,
+            number_of_binary_variables=self.number_of_binary_variables,
             active_obstacle_ids=active_ids,
         )
 
@@ -286,13 +435,15 @@ class GurobiFlatCoordinateOAMPC:
 
         z0 = self._current_flat_state(current_state)
         self._fix_initial_flat_state(z0)
-        psi, _vx, vx_eps, _m11, _m12 = self._update_virtual_input_constraints(current_state)
+        psi, vx_eps = self._update_virtual_input_constraints(current_state, reference_state)
+        self._apply_shifted_warm_start(z0)
         self.model.setObjective(self._build_objective(reference_state), GRB.MINIMIZE)
         self.model.update()
 
         try:
             status, success = self._optimize_current_model()
         except Exception as exc:
+            self.reset_warm_start()
             solve_time = time.perf_counter() - total_start_time
             return SolverResult(
                 delta=0.0,
@@ -305,11 +456,12 @@ class GurobiFlatCoordinateOAMPC:
                 number_of_config_obstacles=len(active_obstacles),
                 number_of_active_obstacles=len(active_obstacles),
                 number_of_active_edges=int(sum(int(obstacle["number_of_edges"]) for obstacle in active_obstacles)),
+                number_of_binary_variables=self.number_of_binary_variables,
                 active_obstacle_ids=[int(obstacle["obstacle_id"]) for obstacle in active_obstacles],
             )
 
         solve_time = time.perf_counter() - total_start_time
-        return self._result_from_solution(
+        result = self._result_from_solution(
             status=f"MIQP_{status}",
             success=success,
             solve_time=solve_time,
@@ -317,3 +469,9 @@ class GurobiFlatCoordinateOAMPC:
             vx_eps=vx_eps,
             active_obstacles=active_obstacles,
         )
+        if success:
+            self._store_solution_for_warm_start()
+        else:
+            # A failed iteration makes the previous one-step shift stale.
+            self.reset_warm_start()
+        return result

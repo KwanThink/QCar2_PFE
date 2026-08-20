@@ -23,13 +23,9 @@ class OAMPCTemplate:
     virtual_input: gp.tupledict
     slack: gp.Var
     alpha: gp.tupledict
-    beta: gp.tupledict
     w_constraints: dict[str, list[gp.Constr]]
     obstacle_face_constraints: dict[tuple[int, int, int], gp.Constr]
     obstacle_sum_constraints: dict[tuple[int, int], gp.Constr]
-    beta_forward_constraints: dict[tuple[int, int, int], gp.Constr]
-    beta_backward_constraints: dict[tuple[int, int, int], gp.Constr]
-    beta_sum_constraints: dict[tuple[int, int], gp.Constr]
     horizon_steps: int
     sample_time: float
     ad_matrix: np.ndarray
@@ -129,13 +125,12 @@ def add_virtual_input_constraint_placeholders(
     return w_constraints
 
 
-# Add always-on Big-M obstacle constraints and binary variable placeholders.
+# Add always-on Big-M obstacle constraints and binary alpha placeholders.
 def add_obstacle_constraints(
     model: gp.Model,
     flat_state: gp.tupledict,
     slack: gp.Var,
     alpha: gp.tupledict,
-    beta: gp.tupledict,
     obstacles: list[dict[str, Any]],
     horizon_steps: int,
     number_of_template_edges: int,
@@ -144,16 +139,9 @@ def add_obstacle_constraints(
 ) -> tuple[
     dict[tuple[int, int, int], gp.Constr],
     dict[tuple[int, int], gp.Constr],
-    dict[tuple[int, int, int], gp.Constr],
-    dict[tuple[int, int, int], gp.Constr],
-    dict[tuple[int, int], gp.Constr],
 ]:
     obstacle_face_constraints: dict[tuple[int, int, int], gp.Constr] = {}
     obstacle_sum_constraints: dict[tuple[int, int], gp.Constr] = {}
-    beta_forward_constraints: dict[tuple[int, int, int], gp.Constr] = {}
-    beta_backward_constraints: dict[tuple[int, int, int], gp.Constr] = {}
-    beta_sum_constraints: dict[tuple[int, int], gp.Constr] = {}
-    transition_count = max(0, horizon_steps - 1)
 
     for obstacle_slot, obstacle in enumerate(obstacles):
         halfspace_matrix = np.asarray(obstacle["G"], dtype=float)
@@ -182,29 +170,7 @@ def add_obstacle_constraints(
                     name=f"obs_face_o{obstacle_slot}_e{edge_slot}_j{step}",
                 )
 
-        for transition in range(transition_count):
-            beta_sum = gp.quicksum(beta[obstacle_slot, edge_slot, transition] for edge_slot in range(edge_count))
-            beta_sum_constraints[obstacle_slot, transition] = model.addConstr(beta_sum <= 1.0, name=f"obs_beta_sum_o{obstacle_slot}_j{transition}")
-            for edge_slot in range(number_of_template_edges):
-                beta_variable = beta[obstacle_slot, edge_slot, transition]
-                if edge_slot >= edge_count:
-                    beta_variable.UB = 0.0
-                beta_forward_constraints[obstacle_slot, edge_slot, transition] = model.addConstr(
-                    alpha[obstacle_slot, edge_slot, transition + 1]
-                    - alpha[obstacle_slot, edge_slot, transition]
-                    - beta_variable
-                    <= 0.0,
-                    name=f"obs_beta_forward_o{obstacle_slot}_e{edge_slot}_j{transition}",
-                )
-                beta_backward_constraints[obstacle_slot, edge_slot, transition] = model.addConstr(
-                    alpha[obstacle_slot, edge_slot, transition]
-                    - alpha[obstacle_slot, edge_slot, transition + 1]
-                    - beta_variable
-                    <= 0.0,
-                    name=f"obs_beta_backward_o{obstacle_slot}_e{edge_slot}_j{transition}",
-                )
-
-    return obstacle_face_constraints, obstacle_sum_constraints, beta_forward_constraints, beta_backward_constraints, beta_sum_constraints
+    return obstacle_face_constraints, obstacle_sum_constraints
 
 
 # Save lightweight metadata describing the generated OAMPC template.
@@ -219,7 +185,6 @@ def save_solver_metadata(
     oampc_config = config["oampc"]
     obstacle_config = config["obstacle_avoidance"]
     horizon_steps = int(oampc_config["N"])
-    transition_count = max(0, horizon_steps - 1)
     metadata = {
         "solver_type": "Gurobi persistent MIQP template",
         "obstacle_constraints": True,
@@ -241,7 +206,6 @@ def save_solver_metadata(
         "number_of_config_obstacles": int(number_of_config_obstacles),
         "number_of_template_edges": int(number_of_template_edges),
         "number_of_alpha_variables": int(number_of_config_obstacles * number_of_template_edges * horizon_steps),
-        "number_of_beta_variables": int(number_of_config_obstacles * number_of_template_edges * transition_count),
         "Big-M M": float(obstacle_config["M"]),
         "gamma": float(obstacle_config["gamma"]),
         "slack_weight": float(obstacle_config["slack_weight"]),
@@ -252,7 +216,10 @@ def save_solver_metadata(
 
 
 # Build and return a reusable Gurobi model template for the OAMPC controller.
-def build_oampc_template(config: dict[str, Any]) -> OAMPCTemplate:
+def build_oampc_template(
+    config: dict[str, Any],
+    obstacle_file_config: dict[str, Any],
+) -> OAMPCTemplate:
     oampc_config = config["oampc"]
     obstacle_config = config["obstacle_avoidance"]
     solver_config = oampc_config.get("solver", {})
@@ -263,10 +230,9 @@ def build_oampc_template(config: dict[str, Any]) -> OAMPCTemplate:
     gamma = float(obstacle_config["gamma"])
     output_dir = Path(config["_resolved_paths"]["generated_solver_dir"])
 
-    obstacles = build_obstacle_list(config)
+    obstacles = build_obstacle_list(obstacle_file_config)
     number_of_config_obstacles = len(obstacles)
     number_of_template_edges = max([int(obstacle["number_of_edges"]) for obstacle in obstacles], default=0)
-    transition_count = max(0, horizon_steps - 1)
 
     model = gp.Model("qcar2_flat_coordinate_oampc_mk2")
     configure_gurobi_model(model, solver_config)
@@ -275,22 +241,14 @@ def build_oampc_template(config: dict[str, Any]) -> OAMPCTemplate:
     virtual_input = model.addVars(horizon_steps, 2, lb=-GRB.INFINITY, ub=GRB.INFINITY, name="v")
     slack = model.addVar(lb=0.0, ub=GRB.INFINITY, name="obstacle_slack")
     alpha = model.addVars(number_of_config_obstacles, number_of_template_edges, horizon_steps, lb=0.0, ub=1.0, vtype=GRB.BINARY, name="alpha")
-    beta = model.addVars(number_of_config_obstacles, number_of_template_edges, transition_count, lb=0.0, ub=1.0, vtype=GRB.BINARY, name="beta")
 
     add_flat_dynamics_constraints(model, flat_state, virtual_input, horizon_steps, sample_time)
     w_constraints = add_virtual_input_constraint_placeholders(model, virtual_input, horizon_steps, constraints)
-    (
-        obstacle_face_constraints,
-        obstacle_sum_constraints,
-        beta_forward_constraints,
-        beta_backward_constraints,
-        beta_sum_constraints,
-    ) = add_obstacle_constraints(
+    obstacle_face_constraints, obstacle_sum_constraints = add_obstacle_constraints(
         model,
         flat_state,
         slack,
         alpha,
-        beta,
         obstacles,
         horizon_steps,
         number_of_template_edges,
@@ -312,13 +270,9 @@ def build_oampc_template(config: dict[str, Any]) -> OAMPCTemplate:
         virtual_input=virtual_input,
         slack=slack,
         alpha=alpha,
-        beta=beta,
         w_constraints=w_constraints,
         obstacle_face_constraints=obstacle_face_constraints,
         obstacle_sum_constraints=obstacle_sum_constraints,
-        beta_forward_constraints=beta_forward_constraints,
-        beta_backward_constraints=beta_backward_constraints,
-        beta_sum_constraints=beta_sum_constraints,
         horizon_steps=horizon_steps,
         sample_time=sample_time,
         ad_matrix=ad_matrix,

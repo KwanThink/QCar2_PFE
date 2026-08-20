@@ -8,7 +8,7 @@ from typing import Any
 
 import numpy as np
 
-from src.config_loader import load_config
+from src.config_loader import load_config, load_obstacle_config
 from src.obstacle import build_obstacle_list
 from src.qlabs_interface import (
     QLabsStateReader,
@@ -52,6 +52,7 @@ def run_control_loop(
     reference_manager: ReferenceManager,
     config: dict[str, Any],
     logger: ResultLogger,
+    obstacle_file_config: dict[str, Any],
     obstacle_list: list[dict[str, Any]],
 ) -> None:
     from src.single_track_oampc import GurobiFlatCoordinateOAMPC, angle_error, unwrap_to_reference
@@ -68,7 +69,7 @@ def run_control_loop(
     max_consecutive_failures = int(solver_config["max_consecutive_failures"])
 
     state_reader = QLabsStateReader(config, initial_vx=0.0)
-    solver = GurobiFlatCoordinateOAMPC(config)
+    solver = GurobiFlatCoordinateOAMPC(config, obstacle_file_config)
     logger.start()
 
     final_reference_state = reference_manager.state_at(reference_manager.sample_count() - 1)
@@ -148,6 +149,7 @@ def run_control_loop(
                 number_of_config_obstacles=solver_result.number_of_config_obstacles,
                 number_of_active_obstacles=solver_result.number_of_active_obstacles,
                 number_of_active_edges=solver_result.number_of_active_edges,
+                number_of_binary_variables=solver_result.number_of_binary_variables,
                 obstacle_list=obstacle_list,
                 active_obstacle_ids=solver_result.active_obstacle_ids,
             )
@@ -167,6 +169,7 @@ def run_control_loop(
 def main() -> None:
     try:
         config = load_config()
+        obstacle_file_config = load_obstacle_config()
     except Exception as exc:
         print(str(exc))
         return
@@ -192,8 +195,8 @@ def main() -> None:
         qlabs.destroy_all_spawned_actors()
         qcar2 = spawn_qcar2(qlabs, config)
         # Spawn the obstacles
-        obstacle_list = build_obstacle_list(config)
-        spawned_obstacles = spawn_obstacles_from_config(qlabs, config)
+        obstacle_list = build_obstacle_list(obstacle_file_config)
+        spawned_obstacles = spawn_obstacles_from_config(qlabs, config, obstacle_file_config)
         if spawned_obstacles:
             print(f"Spawned {len(spawned_obstacles)} obstacle(s).")
         # Draw reference on QLabs
@@ -203,8 +206,8 @@ def main() -> None:
         if WAIT_FOR_ENTER_BEFORE_TRACKING:
             input("Press Enter to start tracking...")
 
-        logger = ResultLogger(config)
-        run_control_loop(qcar2, reference_manager, config, logger, obstacle_list)
+        logger = ResultLogger(config, obstacle_file_config)
+        run_control_loop(qcar2, reference_manager, config, logger, obstacle_file_config, obstacle_list)
 
         if logger.run_folder is not None:
             print(f"Results saved: {logger.run_folder}")
