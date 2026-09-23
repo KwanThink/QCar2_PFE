@@ -54,29 +54,21 @@ OUTPUT_DIR = DEFAULT_OUTPUT_DIR
 WAYPOINTS = np.array(
     [
         [0.0, 0.0],
-        [-1.0, 0.4],
-        [-1.5, 1.5],
-        [-1.0, 2.6],
-        [0.0, 3.0],
-        [1.0, 2.6],
-        [1.5, 1.5],
-        [1.0, 0.4],
-        [0.0, 0.0],
+        [-1.5, 0.2],
+        [-2.2, 0.8],
+        [-3.0, 1.0],
     ],
     dtype=float,
 )
 
 # Boundary heading angles [rad].
 # Intermediate headings are computed automatically from local tangent directions.
-THETA_START = 2.7611
-THETA_END = -2.7611
+THETA_START = 3.009
+THETA_END = 2.897
 
 # Travelling time of each segment [s].
 # Must contain exactly len(WAYPOINTS) - 1 values.
-SEGMENT_TIMES = [
-    12.0, 10.1, 10.1, 9.0,
-    9.0, 10.1, 10.1, 12.0,
-]
+SEGMENT_TIMES = [15.0, 15.0, 15.0]
 
 EPS = 1e-9
 

@@ -2,7 +2,7 @@ project:
   name: OAMPC_Mk2
 
 paths:
-  quanser_python_dir: "../python"
+  quanser_python_dir: "../Qcar_Libraries/src/libraries/python"
   generated_trajectory_dir: "generated_qcar2_flatness_bezier_Mk1"
   results_dir: "results"
 
@@ -48,7 +48,7 @@ oampc:
 
 obstacle_avoidance:
   M: 100.0
-  gamma: 0.25
+  gamma: 0.35
   slack_weight: 100000000.0
 
 tracking:

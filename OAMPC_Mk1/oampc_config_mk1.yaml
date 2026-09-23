@@ -2,7 +2,7 @@ project:
   name: OAMPC_Mk1
 
 paths:
-  quanser_python_dir: "../python"
+  quanser_python_dir: "../Qcar_Libraries/src/libraries/python"
   generated_trajectory_dir: "generated_qcar2_flatness_bezier_Mk1"
   results_dir: "results"
 
@@ -35,8 +35,8 @@ oampc:
   wheelbase: 0.25725 #m
   epsilon: 1.0e-3
 
-  Q: [160.0, 160.0]
-  R: [2.0, 2.0]
+  Q: [120.0, 120.0]
+  R: [5.0, 5.0]
 
   constraints:
     vx_min: -2.0 # m/s

@@ -16,13 +16,12 @@ import matplotlib.pyplot as plt
 # INPUT SELECTION
 # Change only these run names when you want to compare another pair of runs.
 # =============================================================================
-NMPC_RUN_NAME = "run_Mk1Gu_1"
-FLMPC_RUN_NAME = "run_ObsAv_Mk1_1"
+NMPC_RUN_NAME = "run_Mk1Gu_1_Done"
+FLMPC_RUN_NAME = "run_ObsAv_Mk1_1_Done"
 
 # Folder names inside QCar2_PFE.
 NMPC_PROJECT_FOLDER = "NLMPC_Mk1Gu"
 FLMPC_PROJECT_FOLDER = "OAMPC_Mk1"
-# FLMPC_PROJECT_FOLDER = "NLMPC_Mk1Gu"
 
 # Choose which run provides the single reference curve shown in the figures.
 # The script checks whether the references used by both runs are compatible.
@@ -208,23 +207,6 @@ def save_figure(fig: plt.Figure, stem: str) -> None:
     plt.close(fig)
 
 
-def reserve_right_space_for_legend(
-    axis: plt.Axes,
-    fraction: float = 0.25,
-) -> None:
-    x_min, x_max = axis.get_xlim()
-    x_range = x_max - x_min
-
-    if x_range > 0.0:
-        axis.set_xlim(x_min, x_max + fraction * x_range)
-
-    axis.legend(
-        loc="upper right",
-        framealpha=0.90,
-        fontsize=9,
-    )
-
-
 def add_three_curves(
     axis: plt.Axes,
     nmpc_time: np.ndarray,
@@ -238,7 +220,7 @@ def add_three_curves(
     axis.plot(flmpc_time, flmpc_values, linestyle="--", label="FLMPC")
     axis.plot(ref_time, ref_values, linestyle="-.", label="Reference")
     axis.grid(True)
-    reserve_right_space_for_legend(axis)
+    axis.legend()
 
 
 def add_two_error_curves(
@@ -250,9 +232,9 @@ def add_two_error_curves(
 ) -> None:
     axis.plot(nmpc_time, nmpc_values, label="NMPC")
     axis.plot(flmpc_time, flmpc_values, linestyle="--", label="FLMPC")
-    axis.axhline(0.0, linestyle="-.", linewidth=1.0, label="Reference")
+    axis.axhline(0.0, linestyle="-.", linewidth=1.0, label="Reference = 0")
     axis.grid(True)
-    reserve_right_space_for_legend(axis)
+    axis.legend()
 
 
 def selected_reference(nmpc: RunData, flmpc: RunData) -> RunData:
@@ -293,7 +275,7 @@ def plot_trajectory(nmpc: RunData, flmpc: RunData, ref_run: RunData) -> None:
     axis.set_title("Trajectory Tracking Comparison")
     axis.axis("equal")
     axis.grid(True)
-    reserve_right_space_for_legend(axis, fraction=0.20)
+    axis.legend()
 
     save_figure(fig, "trajectory_tracking_comparison")
 
@@ -365,7 +347,7 @@ def plot_controls(nmpc: RunData, flmpc: RunData) -> None:
         axis.set_title(title)
         axis.set_xlabel("t (s)")
         axis.grid(True)
-        reserve_right_space_for_legend(axis)
+        axis.legend()
 
     fig.suptitle("QCar2 Control Comparison")
     save_figure(fig, "controls_comparison")
@@ -439,7 +421,7 @@ def plot_tracking_errors(nmpc: RunData, flmpc: RunData) -> None:
         axis.set_title(title)
         axis.set_xlabel("t (s)")
         axis.grid(True)
-        reserve_right_space_for_legend(axis)
+        axis.legend()
 
     fig.suptitle("Tracking Error Comparison")
     save_figure(fig, "tracking_error_comparison")
@@ -505,21 +487,21 @@ def plot_solve_times(nmpc: RunData, flmpc: RunData) -> tuple[dict, dict]:
         linestyle=":",
         linewidth=1.2,
         color=nmpc_line.get_color(),
-        label=f"NMPC mean time",
+        label=f"NMPC mean = {nmpc_stats['mean_solve_time_ms']:.3f} ms",
     )
     axis.axhline(
         flmpc_stats["mean_solve_time_s"],
         linestyle=":",
         linewidth=1.2,
         color=flmpc_line.get_color(),
-        label=f"FLMPC mean time",
+        label=f"FLMPC mean = {flmpc_stats['mean_solve_time_ms']:.3f} ms",
     )
 
     axis.set_title("Computational Time Comparison")
     axis.set_xlabel("t (s)")
     axis.set_ylabel("Solve time (s)")
     axis.grid(True)
-    reserve_right_space_for_legend(axis, fraction=0.30)
+    axis.legend()
 
     save_figure(fig, "solve_time_comparison")
     return nmpc_stats, flmpc_stats

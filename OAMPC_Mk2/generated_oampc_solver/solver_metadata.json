@@ -76,6 +76,6 @@
   "number_of_template_edges": 4,
   "number_of_alpha_variables": 104,
   "Big-M M": 100.0,
-  "gamma": 0.25,
+  "gamma": 0.35,
   "slack_weight": 100000000.0
 }

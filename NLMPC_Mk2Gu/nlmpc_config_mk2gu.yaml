@@ -2,7 +2,7 @@ project:
   name: NLMPC_Mk2Gu
 
 paths:
-  quanser_python_dir: "../python"
+  quanser_python_dir: "../Qcar_Libraries/src/libraries/python"
   generated_trajectory_dir: "generated_qcar2_flatness_bezier_Mk1"
   generated_solver_dir: "generated_gurobi_nlmpc_solver"
   results_dir: "results"

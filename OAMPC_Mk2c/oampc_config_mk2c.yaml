@@ -1,7 +1,7 @@
 project:
   name: OAMPC_Mk2c
 paths:
-  quanser_python_dir: ../python
+  quanser_python_dir: "../Qcar_Libraries/src/libraries/python"
   generated_trajectory_dir: generated_qcar2_flatness_bezier_Mk1
   results_dir: results
 
@@ -17,17 +17,17 @@ trajectory:
      [2.0, 0.0],
      [2.5, -0.5],
      [3.0, -1.0],
-     [3.5, -1.5],
-     [4.0, -1.0],
+     [3.6, -1.5],
+     [4.5, -1.0],
      [5.5, -0.5],
      [6.0, 0.0],
 
      [6.0, 1.0],
-     [5.0, 1.5],
+     [5.0, 1.3],
      [4.0, 1.5],
      [3.5, 2.0],
      [3.5, 3.0],
-     [4.0, 3.5],
+     [4.0, 3.7],
 
      [5.0, 4.0],
      [6.0, 4.0],
@@ -57,7 +57,7 @@ oampc:
   Ts: 0.02
   wheelbase: 0.25725
   epsilon: 0.001
-  Q: [100.0, 100.0]
+  Q: [160.0, 160.0]
   R: [2.0, 2.0]
   constraints:
     vx_min: 0.0
@@ -75,13 +75,14 @@ oampc:
 
 obstacle_avoidance:
   M: 100.0
-  gamma: 0.25
+  gamma: 0.35
   slack_weight: 100000000.0
 
   activation:
     radius: 2.0
     field_of_view: 180.0
     max_active_obstacles: 4
+    deactive_distance: 0.25
 
 
 tracking:

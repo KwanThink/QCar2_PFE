@@ -1,0 +1,18 @@
+Mk2 generic folder comparison
+====================
+Run A: run_Mk2_Circle_1_Completed
+Run B: run_FLMPC_Mk2_1_Completed
+
+Run A mean solve time: 0.001426395 s (1.426 ms)
+Run B mean solve time: 0.001275629 s (1.276 ms)
+Run A / Run B mean solve-time ratio: 1.118 times
+
+Position tracking error
+-----------------------
+Run A RMSE position: 0.069106 m
+Run A MAE position: 0.057023 m
+Run A max position error: 0.243324 m
+
+Run B RMSE position: 0.098050 m
+Run B MAE position: 0.081854 m
+Run B max position error: 0.267293 m

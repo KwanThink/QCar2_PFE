@@ -1,0 +1,12 @@
+{
+  "number_of_samples": 462,
+  "mean_position_error": 0.26579217547684203,
+  "max_position_error": 0.9811315536499023,
+  "mean_yaw_error_abs": 0.33883925628996125,
+  "max_yaw_error_abs": 1.7662083983381809,
+  "mean_speed_error_abs": 0.1522199113363048,
+  "max_speed_error_abs": 0.7501085808944887,
+  "mean_solve_time": 0.026456663421066923,
+  "max_solve_time": 0.13113610004074872,
+  "solver_success_rate": 1.0
+}

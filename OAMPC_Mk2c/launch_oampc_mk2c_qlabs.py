@@ -74,7 +74,7 @@ def run_control_loop(
     activation_config = config["obstacle_avoidance"]["activation"]
     obstacle_activation_manager = ObstacleActivationManager(
         activation_config=activation_config,
-        safety_margin=float(config["obstacle_avoidance"]["gamma"]),
+        safety_margin=float(config["obstacle_avoidance"]["activation"]["deactive_distance"]),
     )
     logger.start()
 

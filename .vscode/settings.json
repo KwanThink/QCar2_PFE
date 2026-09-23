@@ -6,9 +6,9 @@
             "packageManager": "ms-python.python:pip"
         }
     ],
-    "python.defaultInterpreterPath": "E:/VSC_IDE/Python3119/python.exe",
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv",
     "python.analysis.extraPaths": [
-        "E:/VSC_IDE/Qcar_PFE/Qcar_Libraries/src/libraries/python"
+        "${workspaceFolder}/Qcar_Libraries/src/libraries/python"
     ],
-    "cmake.sourceDirectory": "E:/VSC_IDE/Qcar_PFE/Qcar_Libraries/src/examples/sdcs/qcar/hardware/ros1_python/src/vision_opencv/image_geometry"
+    "cmake.sourceDirectory": "${workspaceFolder}/Qcar_Libraries/urdf_representations-main/qarm"
 }

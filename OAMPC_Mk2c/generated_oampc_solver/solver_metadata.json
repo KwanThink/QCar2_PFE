@@ -19,8 +19,8 @@
   "wheelbase": 0.25725,
   "epsilon": 0.001,
   "Q": [
-    100.0,
-    100.0
+    160.0,
+    160.0
   ],
   "R": [
     2.0,
@@ -77,6 +77,6 @@
   "number_of_template_edges": 4,
   "number_of_alpha_variables": 480,
   "Big-M M": 100.0,
-  "gamma": 0.25,
+  "gamma": 0.35,
   "slack_weight": 100000000.0
 }

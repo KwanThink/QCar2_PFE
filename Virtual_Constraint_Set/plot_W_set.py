@@ -36,6 +36,8 @@ Lwb = 0.25725
 # Fixed vx and psi's values are used by main() to draw multiple W sets in one figure.
 # vx_array  = np.array([0.20, 0.28, 0.36, 0.45, 0.58, 0.72, 0.85, 0.92, 0.84, 0.70, 0.52, 0.35])
 # psi_array = np.array([0.00,-0.06,-0.12,-0.20,-0.29,-0.39,-0.50,-0.60,-0.69,-0.77,-0.84,-0.90])
+vx_array = np.array([0.5])
+psi_array = np.array([0.8])
 
 # vx_array = np.array([
 #     0.20, 0.23, 0.26, 0.29, 0.32,
@@ -63,16 +65,16 @@ Lwb = 0.25725
 #     5.65, 5.78, 5.91, 6.03, 6.16
 # ])
 
-N = 30
+# N = 30
 
-psi_start = 0.0
-psi_end = 2.0 * np.pi
-psi_step = (psi_end - psi_start) / N
+# psi_start = 0.0
+# psi_end = 2.0 * np.pi
+# psi_step = (psi_end - psi_start) / N
 
-psi_array = np.arange(psi_start, psi_end, psi_step)
+# psi_array = np.arange(psi_start, psi_end, psi_step)
 
-vx_value = 1.0
-vx_array = np.full(N, vx_value)
+# vx_value = 1.0
+# vx_array = np.full(N, vx_value)
 
 # Output folder
 OUTPUT_DIR = Path(__file__).resolve().parent / "W_set"

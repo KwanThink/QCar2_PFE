@@ -1,0 +1,14 @@
+{
+  "stop_reason": "fixed PN goal pose tolerance reached",
+  "num_steps": 926,
+  "num_solver_failures": 0,
+  "rmse_X": 0.0578840308215401167,
+  "rmse_Y": 0.0377504882664547251,
+  "rmse_position": 0.0691061530437394461,
+  "rmse_psi": 0.0873350925008795076,
+  "rmse_vx": 0.09758594797857717,
+  "max_position_error": 0.243323991706101556,
+  "max_abs_desired_speed": 0.810892151191665023,
+  "max_abs_delta": 0.523599999999999732,
+  "max_abs_ax": 0.999999999999999889
+}

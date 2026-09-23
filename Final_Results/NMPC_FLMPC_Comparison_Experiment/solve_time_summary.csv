@@ -1,0 +1,3 @@
+controller,run,number_of_samples,mean_solve_time_s,mean_solve_time_ms,max_solve_time_s,max_solve_time_ms
+Run A,run_Mk2_Circle_1_Completed,926,0.001426395473002113,1.426395473002113,0.0036563839999999,3.6563839999999
+Run B,run_FLMPC_Mk2_1_Completed,901,0.0012756285726969548,1.2756285726969547,0.003556768,3.556768

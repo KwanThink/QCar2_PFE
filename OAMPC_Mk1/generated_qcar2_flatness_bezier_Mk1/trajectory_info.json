@@ -1,7 +1,7 @@
 {
-  "sample_time": 0.02,
+  "sample_time": 0.01,
   "wheelbase": 0.25725,
-  "sample_count": 1001,
+  "sample_count": 2001,
   "total_time": 20.0,
   "psi_start": 3.14,
   "psi_end": 3.14,
